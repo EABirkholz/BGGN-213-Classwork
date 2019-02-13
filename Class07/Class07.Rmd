@@ -1,0 +1,131 @@
+---
+title: "Class07 Markdown"
+author: "Erica Birkholz"
+date: "January 30, 2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Functions Revisited
+
+Load (i.e. **source**) our rescale() function from last class.
+
+```{r}
+source("http://tinyurl.com/rescale-R")
+```
+
+Test this function
+
+```{r}
+rescale(1:5)
+```
+
+```{r}
+rescale( c(1:5, "string"))
+```
+
+We want to make this function more robust to these types of errors.
+
+```{r}
+rescale2( c(1:5, "string"))
+```
+
+```{r}
+is.numeric(1:5)
+```
+
+```{r}
+is.numeric("string")
+
+```
+
+```{r}
+!is.numeric("string")
+```
+
+```{r}
+#Define example x and y
+x <- c( 1, 2, NA, 3, NA)
+y <- c(NA, 3, NA, 3, 4)
+```
+
+```{r}
+is.na(x)
+is.na(y)
+is.na(x) & is.na(y)
+#How many TRUEs (matches) are there?
+sum(is.na(x) & is.na(y))
+#Where is vector does the TRUE lay?
+which(is.na(x) & is.na(y))
+```
+
+Now we take our working snippet and make a first function.
+
+```{r}
+both_na <- function(x,y){
+  #Check for NA elements in both input vectors
+  sum(is.na(x) & is.na(y))
+}
+```
+
+```{r}
+both_na(x,y)
+```
+```{r}
+x <- c(NA, NA, NA)
+y1 <- c( 1, NA, NA)
+y2 <- c( 1, NA, NA, NA)
+```
+
+```{r}
+both_na(x, y2)
+```
+
+```{r}
+both_na2(x, y2)
+```
+
+```{r}
+x <- c( 1, 2, NA, 3, NA)
+y <- c(NA, 3, NA, 3, 4)
+
+both_na3(x,y)
+```
+
+Exploration of rentrez.
+
+```{r}
+install.packages("rentrez")
+library(rentrez)
+```
+
+```{r}
+entrez_dbs()
+```
+
+```{r}
+entrez_db_searchable("protein")
+```
+
+```{r}
+search_protein <- entrez_search(db = "protein", term = "(HNH endonuclease[protein name]) AND pseudomonas [ORGN]")
+print(search_protein)
+```
+
+Now I'll plot the trend in how much the word *synergy* was used in Pubmed over 2010-2018.
+```{r}
+search_year <- function(year, term){
+    query <- paste(term, "AND (", year, "[PDAT])")
+    entrez_search(db="pubmed", term=query, retmax=0)$count
+}
+#
+
+year <- 2010:2018
+papers <- sapply(year, search_year, term="synergy", USE.NAMES=FALSE)
+
+plot(year, papers, type='b', main="Abuse of Synergy")
+```
+
