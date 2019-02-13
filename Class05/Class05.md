@@ -1,7 +1,7 @@
-Crop Analysis Q3 2013
+Graphics and Plots
 ================
-John Smith
-May 3rd, 2014
+Erica Birkholz
+January 2019
 
 ``` r
 #Class 5 Graphics and Plots
