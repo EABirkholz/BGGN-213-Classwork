@@ -1,7 +1,7 @@
 #' ---
-#' title: "Crop Analysis Q3 2013"
-#' author: "John Smith"
-#' date: "May 3rd, 2014"
+#' title: "Graphics and Plots"
+#' author: "Erica Birkholz"
+#' date: "January 2019"
 #' output: "github_document"
 #' ---
 
