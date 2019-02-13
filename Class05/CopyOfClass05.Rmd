@@ -1,9 +1,13 @@
-#' ---
-#' title: "Crop Analysis Q3 2013"
-#' author: "John Smith"
-#' date: "May 3rd, 2014"
-#' output: "github_document"
-#' ---
+---
+title: "class 5 help"
+author: "Erica Birkholz"
+date: "February 13, 2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
 
 #Class 5 Graphics and Plots
 
