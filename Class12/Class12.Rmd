@@ -1,0 +1,79 @@
+---
+title: "Class 12: Structural Bioinformatics Drug Discovery"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Clean up our target protein structure
+
+First, download target (protein receptor) structure from PDB.  We will use PDB ID "1hsg".
+
+```{r}
+library(bio3d)
+
+pdb.code <- "1hsg"
+file.pdb <- get.pdb(pdb.code)
+```
+
+Extract proein only segment and write a new PDB file.  Also make a new PDB file for the ligand.
+
+```{r}
+hiv <- read.pdb(file.pdb)
+hiv
+```
+
+
+Protein extraction
+```{r}
+prot <- trim.pdb(hiv, "protein")
+prot
+```
+
+```{r}
+prot.filename <- paste(pdb.code, "_protein.pdb", sep="")
+write.pdb(prot, file=prot.filename)
+```
+
+
+Ligand extraction
+```{r}
+lig <- trim.pdb(hiv, "ligand")
+lig
+```
+
+```{r}
+lig.filename <- paste(pdb.code, "_ligand.pdb", sep="")
+write.pdb(lig, file=lig.filename)
+```
+
+#Convert our docking results for viewing in VMD
+```{r}
+res <- read.pdb("all.pdbqt", multi=T)
+res
+```
+
+```{r}
+write.pdb(res, file="results.pdb")
+```
+
+RMSD - Root Mean Square Deviation
+```{r}
+ori <- read.pdb("ligand.pdbqt")
+rmsd(ori, res)
+```
+
+
+
+
+
+
+
+
+
+
+
+
+

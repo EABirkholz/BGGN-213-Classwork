@@ -1,0 +1,78 @@
+---
+title: "Untitled"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## PDB Statistics
+
+```{r}
+read.table("Data Export Summary.csv", sep=",", header=T)
+```
+
+```{r}
+stats <- read.csv("Data Export Summary.csv", row.names=1)
+stats
+```
+
+Q1. What percentage of structures solved by X-Ray and EM?
+
+```{r}
+per.by.method <- stats$Total/sum(stats$Total) * 100
+names(per.by.method) <- rownames(stats)
+per.by.method
+```
+
+Ans. X-Ray = 89.43%   EM = 1.89%
+
+Q1.2  What percentage of structures are protein?
+
+```{r}
+round( sum(stats$Proteins)/sum(stats$Total) * 100, 2)
+```
+
+Installed datapasta and used Addins > paste as dataframe after ctrl+c on webpage.
+Had to remove "/" from Protein/NA.complex
+
+```{r}
+data.frame(stringsAsFactors=FALSE,
+   Experimental.Method = c("X-Ray", "NMR", "Electron Microscopy", "Other",
+                           "Multi Method", "Total"),
+              Proteins = c(124770L, 10988L, 2057L, 250L, 127L, 138192L),
+         Nucleic.Acids = c(1993L, 1273L, 31L, 4L, 5L, 3306L),
+    ProteinNA.Complex = c(6451L, 257L, 723L, 6L, 2L, 7439L),
+                 Other = c(10L, 8L, 0L, 13L, 1L, 32L)
+)
+
+```
+
+#Section 3. Bio3D
+```{r}
+library(bio3d)
+```
+
+```{r}
+pdb <- read.pdb("1hsg")
+pdb
+```
+
+```{r}
+#library(bio3d.view)
+
+#view(pdb, "overview", col="sse")
+```
+
+Extract protein only portion of PDB structure and write it out to a new PDB file.
+
+Extract the ligand (drug) in similar fashion.
+
+```{r}
+# Select all C-alpha atoms (return their indices)
+library(bio3d)
+ca.inds <- atom.select(pdb, "calpha")
+ca.inds
+```
+
