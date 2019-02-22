@@ -1,0 +1,69 @@
+---
+title: "Class 13: Genome Informatics 1"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## What percent of these samples are genotype G|G?
+
+```{r}
+snp1 <- read.csv("373531-SampleGenotypes-Homo_sapiens_Variation_Sample_rs8067378.csv")
+snp1
+head(snp1)
+```
+
+```{r}
+table(snp1$Genotype..forward.strand.)
+```
+
+```{r}
+table(snp1$Genotype..forward.strand.) / nrow(snp1) *100
+```
+
+##FASTQ Quality Scores (ASCII)
+
+```{r}
+library(seqinr)
+library(gtools)
+
+phred <- asc( s2c("DDDDCDEDCDDDDBBDDDCC@") ) - 33
+phred
+prob <- 10**(-phred/10)
+```
+
+## Genotype Based Expression Levels
+
+```{r}
+expr <- read.table("rs8067378_ENSG00000172057.6.txt")
+head(expr)
+```
+
+```{r}
+table(expr$geno)
+```
+
+```{r}
+inds.gg <- expr$geno == "G/G"
+summary(expr[inds.gg,"exp"])
+```
+
+```{r}
+inds.ag <- expr$geno == "A/G"
+summary(expr[inds.ag,"exp"])
+```
+
+```{r}
+inds.aa <- expr$geno == "A/A"
+summary(expr[inds.aa,"exp"])
+```
+
+## Plot it!
+
+```{r}
+boxplot(exp ~ geno, data=expr, notch=T)
+```
+
+
