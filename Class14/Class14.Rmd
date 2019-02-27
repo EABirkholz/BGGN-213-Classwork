@@ -1,0 +1,229 @@
+---
+title: "Class 14: RNAseq Analysis"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Import countData and colData
+
+```{r}
+counts <- read.csv("data/airway_scaledcounts.csv", stringsAsFactors = FALSE)
+metadata <-  read.csv("data/airway_metadata.csv", stringsAsFactors = FALSE)
+```
+
+
+How many genes are in the dataset?
+
+```{r}
+nrow(counts)
+```
+
+How many counts?
+```{r}
+ncol(counts)
+```
+8, because 1st column is gene names.
+
+Check metadata to counts correspondence (column to row match).
+```{r}
+all(metadata$id == colnames(counts[-1]))
+```
+
+Extract control exps (columns of **counts** based on **metadata**)
+```{r}
+#Find the column names (ids) of the 'control' experiments
+control.ids <- metadata$id[metadata[,"dex"] == "control"]
+control.ids
+
+#Use the ids to extract the control counts columns
+control <- counts[,control.ids]
+rownames(control) <- counts$ensgene
+head(control)
+```
+
+```{r}
+#Find the column names (ids) of the 'treated' experiments
+treated.ids <- metadata$id[metadata[,"dex"] == "treated"]
+treated.ids
+
+#Use the ids to extract the treated counts columns
+treated <- counts[,treated.ids]
+rownames(treated) <- counts$ensgene
+head(treated)
+```
+
+
+Find the mean counts value for each gene in contorl exps.
+```{r}
+control.mean <- rowSums(control)/nrow(control)
+head( control.mean)
+```
+
+
+Find the mean counts value for each gene in treated exps.
+```{r}
+treated.mean <- rowSums(treated)/nrow(treated)
+head( treated.mean)
+```
+
+```{r}
+meancounts <- data.frame(control.mean, treated.mean)
+colSums(meancounts)
+```
+
+#Plot!
+
+```{r}
+plot(meancounts$control.mean,treated.mean, xlab="control", ylab="treated")
+```
+
+
+Make a log-log plot.
+
+```{r}
+plot(meancounts$control.mean,treated.mean, log="xy", xlab="log control", ylab="log treated")
+```
+
+```{r}
+meancounts$log2fc <- log2(meancounts[,"treated.mean"]/meancounts[,"control.mean"])
+head(meancounts)
+```
+
+We need to filter out zero value entries.
+```{r}
+#meancounts[,1:2]
+
+toy <- c(1, 2, 0, 4, 0)
+which(toy  == 0)
+
+newtoy <- cbind(toy, toy)
+newtoy
+newtoy == 0
+which(newtoy == 0, arr.ind = T)
+unique( which(newtoy==0, arr.ind=T)[,1])
+```
+
+```{r}
+zero.vals <- which(meancounts[,1:2]==0, arr.ind=TRUE)
+head(zero.vals)
+
+to.rm <- unique(zero.vals[,1])
+mycounts <- meancounts[-to.rm,]
+head(mycounts)
+```
+
+A common threshold used for calling something differentially expressed is a log2(FoldChange) of greater than 2 or less than -2. Let’s filter the dataset both ways to see how many genes are up or down-regulated.
+
+```{r}
+up.ind <- mycounts$log2fc > 2
+down.ind <- mycounts$log2fc < (-2)
+
+sum(up.ind)
+sum(down.ind)
+```
+250 genes are upregulated over a log2 fold change of 2.
+367 genes are downregulated based on that threshold.
+
+What are the upregulated genes?
+
+```{r}
+head( mycounts[up.ind,])
+```
+
+Annotate the genes so they are biologically relevant to us.
+
+```{r}
+anno <- read.csv("data/annotables_grch38.csv")
+head(anno)
+```
+
+```{r}
+dim(anno)
+```
+
+Let's try the **merge()** function to add the annotations to the data.
+
+```{r}
+#head(mycounts)
+mycounts.anno <- merge(x=mycounts, y=anno, by.x="row.names", by.y="ensgene")
+head(mycounts.anno)
+```
+
+```{r}
+#biocLite("DESeq2")
+#biocLite("AnnotationDbi")
+#biocLite("org.Hs.eg.db")
+```
+
+```{r}
+library("AnnotationDbi")
+library("org.Hs.eg.db")
+```
+
+```{r}
+columns(org.Hs.eg.db)
+```
+
+
+```{r}
+mycounts$symbol <- mapIds(org.Hs.eg.db,
+                     keys=row.names(mycounts),
+                     column="SYMBOL",
+                     keytype="ENSEMBL",
+                     multiVals="first")
+```
+
+```{r}
+library(DESeq2)
+```
+
+Build our DESeq2 Data Set
+```{r}
+dds <- DESeqDataSetFromMatrix(countData=counts, 
+                              colData=metadata, 
+                              design=~dex, 
+                              tidy=TRUE)
+dds
+```
+
+Run the DESeq Analysis
+```{r}
+dds <- DESeq(dds)
+```
+
+```{r}
+res <- results(dds)
+res
+```
+
+
+#Volcano Plot!
+
+Plotting log2 Fold Change and subtracting adjusted p value (padj)
+```{r}
+plot(res$log2FoldChange, -log(res$padj))
+```
+
+```{r}
+mycols <- rep("gray", nrow(res))
+mycols[abs(res$log2FoldChange) > 2] = "blue"
+subset.inds <- res$padj < 0.01 & abs(res$log2FoldChange) > 2
+mycols[subset.inds] <- "magenta"
+
+plot(res$log2FoldChange, -log(res$padj), col=mycols)
+```
+
+
+
+
+
+
+
+
+
+
+
+
