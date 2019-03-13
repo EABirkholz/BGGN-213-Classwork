@@ -1,4 +1,4 @@
-Class 12: Structural Bioinformatics Drug Discovery
+Class 12: Structural Bioinformatics for Drug Discovery
 ================
 
 Clean up our target protein structure
