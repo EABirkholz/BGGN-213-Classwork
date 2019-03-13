@@ -1,0 +1,16 @@
+base
+BiocGenerics
+S4Vectors
+IRanges
+GenomeInfoDb
+GenomicRanges
+Biobase
+matrixStats
+DelayedArray
+SummarizedExperiment
+DESeq2
+AnnotationDbi
+org.Hs.eg.db
+pathview
+gage
+gageData

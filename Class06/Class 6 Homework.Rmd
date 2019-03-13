@@ -1,0 +1,53 @@
+---
+title: "Class 6 Homework"
+author: "Erica Birkholz"
+date: "January 25, 2019"
+output:
+  html_document:
+    df_print: paged
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Simplifying Replicable Functions
+
+```{r}
+#Original code
+library(bio3d)
+s1 <- read.pdb("4AKE") # kinase with drug
+s2 <- read.pdb("1AKE") # kinase no drug
+s3 <- read.pdb("1E4Y") # kinase with drug
+s1.chainA <- trim.pdb(s1, chain="A", elety="CA")
+s2.chainA <- trim.pdb(s2, chain="A", elety="CA")
+s3.chainA <- trim.pdb(s3, chain="A", elety="CA") #I fixed the error to check against the right plots.
+s1.b <- s1.chainA$atom$b
+s2.b <- s2.chainA$atom$b
+s3.b <- s3.chainA$atom$b
+plotb3(s1.b, sse=s1.chainA, typ="l", ylab="Bfactor")
+plotb3(s2.b, sse=s2.chainA, typ="l", ylab="Bfactor")
+plotb3(s3.b, sse=s3.chainA, typ="l", ylab="Bfactor")
+```
+
+##Create a function based on each step to be taken on one sample.
+
+```{r}
+#Bfactor has the inputs of a PDB code and which chain to analyze. I would allow the atom type to be selected but it appears C-alpha is the only (most?) relevant one. I would also allow parameters besides Bfactor to be plotted but the pdb table does not appear to contain data best visualized by plotting.  This function plots the Bfactor of each residue in the specific chain of a protein, on a lined scatterplot with marginal secondary structure notation.
+Bfactor <- function(x, c, t, na.rm=TRUE){
+  full <- read.pdb(x)  
+  #Read in the protein.
+  chain <- trim.pdb(full, chain=c, elety="CA")
+  #Pull only chain A and atom type C alpha.
+  bfac <- chain$atom$b  
+  #Store the B factor for each atom in trimmed "chain".
+  plotb3(bfac, sse=chain, typ="l", ylab="Bfactor")
+  #Draw standard scatter plot with secondary structure (sse), lines, and a y-axis label.
+}
+#Use that function! View that plot!
+Bfactor("4AKE", "A")
+Bfactor("1AKE", "A")
+Bfactor("1E4Y", "A")
+```
+
+

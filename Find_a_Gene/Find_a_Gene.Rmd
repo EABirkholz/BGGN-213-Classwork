@@ -1,0 +1,68 @@
+---
+title: "Find A Gene"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Confirm a novel gene
+
+# Q7 Generate a sequence ientity based **heatmap**
+
+Read in bio3d library
+```{r}
+library(bio3d)
+```
+
+Read in MUSCLE alignment as FASTA from Seaview.
+```{r}
+align <- read.fasta("Kif11 MUSCLE Alignment.fst")
+```
+
+```{r}
+seqid <- seqidentity(align, )
+seqid
+```
+
+Plot the sequence identity matrix
+```{r}
+heatmap(seqid, symm = T, margins = c(8,6))
+```
+
+
+```{r}
+align$colMax <- apply(align, )
+```
+
+```{r}
+rowmaxs <- apply(seqid, 1, function(r) {
+                                       max(ifelse(r==1, 0, r))
+})
+rowmaxs
+```
+
+DogHookworm and OWHookworm are the closest to the middle of the set.
+
+```{r}
+doghw <- read.fasta("DogHW.fa")
+```
+
+```{r}
+blast <- blast.pdb(doghw)
+head(blast)
+```
+
+```{r}
+head(blast$hit.tbl)
+pdb.annotate(blast$hit.tbl$subjectids)
+```
+
+```{r}
+prot1 <- get.pdb("3HQD", path = ".")
+```
+
+
+
+

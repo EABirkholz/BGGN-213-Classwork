@@ -1,0 +1,209 @@
+---
+title: "Class 15: Genome Annotation"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Differential Expression Analysis
+
+```{r Library, message=FALSE}
+library(DESeq2)
+```
+
+Load our data files
+```{r}
+metaFile <- "data/GSE37704_metadata.csv"
+countFile <- "data/GSE37704_featurecounts.csv"
+
+# Import metadata and take a peak
+colData = read.csv(metaFile, row.names=1)
+head(colData)
+```
+
+Import count data
+```{r}
+countData = read.csv(countFile, row.names = 1)
+head(countData)
+```
+
+Q. Complete the code below to remove the troublesome first column from  countData
+
+```{r}
+nrow(countData)
+dim(countData)
+```
+
+
+```{r}
+# Note we need to remove the odd first $length col
+countData <- as.matrix(countData[,-1])
+head(countData)
+```
+
+Check that row and column names match.
+```{r}
+all(rownames(colData) == colnames(countData))
+```
+
+Remove zero values
+```{r}
+inds <- rowSums(countData) != 0
+head(inds)
+```
+```{r}
+countData = countData[inds, ]
+head(countData)
+```
+
+How many genes are left?
+```{r}
+nrow(countData)
+```
+
+We now have `r nrow(countData)` genes remaining in our dataset.
+
+
+
+##Running DESeq2
+```{r, cache = T}
+dds <-  DESeqDataSetFromMatrix(countData=countData,
+                             colData=colData,
+                             design=~condition)
+dds <-  DESeq(dds)
+
+res <- results(dds)
+head(res)
+```
+
+##Volcano Plot!
+```{r}
+mycols <- rep("gray", nrow(res))
+mycols[ abs(res$log2FoldChange) > 2 ] <- "red"
+
+
+inds.col <- res$padj < 0.01 & (abs(res$log2FoldChange) > 2 )
+mycols[inds.col] <- "blue"
+plot(res$log2FoldChange, -log(res$padj), xlab = "log2 Fold Change", ylab = "Adjusted p value", col = mycols)
+```
+
+
+Q. Use the mapIDs() function multiple times to add SYMBOL, ENTREZID and GENENAME annotation to our results by completing the code below.
+```{r Moar Libraries, message=FALSE, warning=FALSE}
+library("AnnotationDbi")
+library("org.Hs.eg.db")
+```
+
+```{r}
+columns(org.Hs.eg.db)
+
+res$symbol = mapIds(org.Hs.eg.db,
+                    keys=row.names(res), 
+                    keytype="ENSEMBL",
+                    column="SYMBOL",
+                    multiVals="first")
+
+res$entrez = mapIds(org.Hs.eg.db,
+                    keys=row.names(res),
+                    keytype="ENSEMBL",
+                    column="ENTREZID",
+                    multiVals="first")
+
+res$name =   mapIds(org.Hs.eg.db,
+                    keys=row.names(res),
+                    keytype="ENSEMBL",
+                    column="GENENAME",
+                    multiVals="first")
+
+head(res, 10)
+```
+
+
+Q. Finally for this section let’s reorder these results by adjusted p-value and save them to a CSV file in your current project directory.
+
+```{r}
+res = res[order(res$pvalue),]
+write.csv(res, file="deseq_results.csv")
+```
+
+
+## Section 2: Pathway Analysis
+
+```{r message=FALSE, warning=FALSE}
+library(pathview)
+library(gage)
+library(gageData)
+```
+
+```{r}
+data(kegg.sets.hs)
+data(sigmet.idx.hs)
+
+# Focus on signaling and metabolic pathways only
+kegg.sets.hs = kegg.sets.hs[sigmet.idx.hs]
+
+# Examine the first 3 pathways
+head(kegg.sets.hs, 3)
+```
+
+
+Set up input for **gage()**
+```{r}
+foldchanges <-  res$log2FoldChange
+names(foldchanges) <- res$entrez
+head(foldchanges)
+```
+
+Get the results
+```{r}
+keggres = gage(foldchanges, gsets=kegg.sets.hs)
+```
+
+```{r}
+attributes(keggres)
+```
+
+Look at the first few down (less) pathways
+```{r}
+head(keggres$less)
+```
+
+```{r}
+pathview(gene.data=foldchanges, pathway.id="hsa04110")
+```
+
+To create a link, square bracket around word(s), followed by parens around url. "[link]()"
+
+To insert an image, begin same format with a "!" and empty square brackets.
+
+![](hsa04110.pathview.png)
+
+
+##Section 3:Gene Ontology
+```{r, cache = T}
+data(go.sets.hs)
+data(go.subs.hs)
+
+# Focus on Biological Process (BP) subset of GO
+gobpsets <- go.sets.hs[go.subs.hs$BP]
+
+gobpres <- gage(foldchanges, gsets=gobpsets, same.dir=TRUE)
+
+lapply(gobpres, head)
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
