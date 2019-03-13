@@ -1,8 +1,6 @@
 ---
-title: "Class07 Markdown"
-author: "Erica Birkholz"
-date: "January 30, 2019"
-output: html_document
+title: "Class 7: Packages from CRAN and BioConductor"
+output: github_document
 ---
 
 ```{r setup, include=FALSE}
@@ -24,13 +22,15 @@ rescale(1:5)
 ```
 
 ```{r}
-rescale( c(1:5, "string"))
+#"Non-numeric argument to binary operator"
+#rescale( c(1:5, "string"))
 ```
 
 We want to make this function more robust to these types of errors.
 
 ```{r}
-rescale2( c(1:5, "string"))
+#"Input x should be numeric"
+#rescale2( c(1:5, "string"))
 ```
 
 ```{r}
@@ -85,7 +85,8 @@ both_na(x, y2)
 ```
 
 ```{r}
-both_na2(x, y2)
+#vectors not the same length
+#both_na2(x, y2)
 ```
 
 ```{r}
@@ -98,7 +99,7 @@ both_na3(x,y)
 Exploration of rentrez.
 
 ```{r}
-install.packages("rentrez")
+#install.packages("rentrez")
 library(rentrez)
 ```
 
